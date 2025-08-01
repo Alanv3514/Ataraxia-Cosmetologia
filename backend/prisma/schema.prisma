@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id         String   @id @default(uuid())
+  nombre     String
+  email      String   @unique
+  password   String
+  creado_en  DateTime @default(now())
+  turnosConfirmados Turno[] @relation("TurnosConfirmados")
+}
+
+model Cliente {
+  id         String   @id @default(uuid())
+  nombre     String
+  apellido   String
+  dni        String   @unique
+  email      String
+  telefono   String
+  creado_en  DateTime @default(now())
+  turnos     Turno[]
+}
+
+model Tratamiento {
+  id          String   @id @default(uuid())
+  nombre      String
+  descripcion String?
+  precio      Float
+  turnos      Turno[]
+}
+
+model Turno {
+  id                String     @id @default(uuid())
+  cliente_id        String
+  tratamiento_id    String
+  fecha_turno       DateTime
+  estado            TurnoEstado
+  comprobante_senia String?
+  mensaje_enviado   Boolean    @default(false)
+  creado_en         DateTime   @default(now())
+  confirmado_por_id String? 
+
+  cliente     Cliente   @relation(fields: [cliente_id], references: [id])
+  tratamiento Tratamiento @relation(fields: [tratamiento_id], references: [id])
+  confirmado_por Admin? @relation("TurnosConfirmados", fields: [confirmado_por_id], references: [id])
+}
+
+enum TurnoEstado {
+  pendiente
+  enviado
+  confirmado
+  cancelado
+}
