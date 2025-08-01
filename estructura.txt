@@ -1,0 +1,22 @@
+backend/
+├── prisma/
+│   ├── schema.prisma
+│   └── migrations/
+├── src/
+│   ├── controllers/
+│   ├── middlewares/
+│   ├── routes/
+│   ├── services/
+│   ├── utils/
+│   ├── config/
+│   ├── redis/                  # Para lógica híbrida
+│   ├── index.ts                # entrypoint
+│   ├── app.ts                  # configura express
+│   └── types/                  # DTOs y types TS
+├── .env
+├── .gitignore
+├── Dockerfile
+├── docker-compose.yml
+├── package.json
+├── tsconfig.json
+└── README.md

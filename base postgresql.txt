@@ -1,0 +1,43 @@
+-- Habilitar extensión para UUIDs
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- Tabla: Administradores
+CREATE TABLE admins (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nombre TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: Clientes
+CREATE TABLE clientes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nombre TEXT NOT NULL,
+    apellido TEXT NOT NULL,
+    dni TEXT UNIQUE NOT NULL,
+    email TEXT NOT NULL,
+    telefono TEXT NOT NULL,
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabla: Tratamientos
+CREATE TABLE tratamientos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    nombre TEXT NOT NULL,
+    descripcion TEXT,
+    precio DECIMAL(10,2) NOT NULL
+);
+
+-- Tabla: Turnos
+CREATE TABLE turnos (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cliente_id UUID NOT NULL REFERENCES clientes(id) ON DELETE CASCADE,
+    tratamiento_id UUID NOT NULL REFERENCES tratamientos(id) ON DELETE CASCADE,
+    fecha_turno TIMESTAMP NOT NULL,
+    estado TEXT NOT NULL CHECK (estado IN ('pendiente', 'enviado', 'confirmado', 'cancelado')),
+    comprobante_senia TEXT,
+    mensaje_enviado BOOLEAN DEFAULT FALSE,
+    confirmado_por UUID REFERENCES admins(id),
+    creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
