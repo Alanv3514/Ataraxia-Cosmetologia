@@ -24,3 +24,31 @@ export const loginAdmin = async (req: Request, res: Response) => {
     return res.status(500).json({ error: 'Error al iniciar sesión' });
   }
 };
+// POST /api/auth/register
+export const registrarAdmin = async (req: Request, res: Response) => {
+  const { nombre, email, password } = req.body;
+
+  try {
+    const existe = await prisma.admin.findUnique({ where: { email } });
+    if (existe) return res.status(400).json({ error: 'Ya existe un admin con ese email' });
+
+    const hash = await bcrypt.hash(password, 10);
+
+    const nuevo = await prisma.admin.create({
+      data: { nombre, email, password: hash }
+    });
+
+    return res.status(201).json({ id: nuevo.id, email: nuevo.email, nombre: nuevo.nombre });
+  } catch (error) {
+    console.error('Error registrando admin:', error);
+    return res.status(500).json({ error: 'Error interno' });
+  }
+};
+
+// GET /api/auth/admins
+export const listarAdmins = async (_req: Request, res: Response) => {
+  const admins = await prisma.admin.findMany({
+    select: { id: true, nombre: true, email: true, creado_en: true }
+  });
+  res.json(admins);
+};

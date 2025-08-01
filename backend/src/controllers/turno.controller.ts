@@ -115,3 +115,54 @@ export const confirmarTurno = async (req: Request, res: Response) => {
       return res.status(500).json({ error: 'Error interno al confirmar turno' });
     }
   };
+  export const listarTurnosConfirmados = async (_req: Request, res: Response) => {
+    try {
+      const turnos = await prisma.turno.findMany({
+        where: { estado: 'confirmado' },
+        include: {
+          cliente: true,
+          tratamiento: true,
+          confirmado_por: { select: { id: true, nombre: true } }
+        },
+        orderBy: { fecha_turno: 'asc' }
+      });
+  
+      res.json(turnos);
+    } catch (error) {
+      res.status(500).json({ error: 'Error al listar turnos confirmados' });
+    }
+  };
+  
+  export const listarTurnosPendientes = async (_req: Request, res: Response) => {
+    try {
+      const claves = await redis.keys('turno:*');
+      const datos = await Promise.all(
+        claves.map(async (key) => {
+          const raw = await redis.get(key);
+          return raw ? JSON.parse(raw) : null;
+        })
+      );
+  
+      const filtrados = datos.filter(Boolean);
+  
+      res.json(filtrados);
+    } catch (error) {
+      res.status(500).json({ error: 'Error al listar turnos pendientes' });
+    }
+  };
+  // GET /api/turnos/ocupados
+export const listarFechasOcupadas = async (_req: Request, res: Response) => {
+  try {
+    const turnos = await prisma.turno.findMany({
+      where: { estado: 'confirmado' },
+      select: { fecha_turno: true }
+    });
+
+    const fechasOcupadas = turnos.map(t => t.fecha_turno.toISOString());
+
+    res.json({ fechas_ocupadas: fechasOcupadas });
+  } catch (error) {
+    console.error('Error al obtener fechas ocupadas:', error);
+    res.status(500).json({ error: 'Error interno' });
+  }
+};
